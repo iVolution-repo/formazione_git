@@ -1,3 +1,4 @@
+git status
 # formazione_git
 playground per formazione 
 
@@ -10,3 +11,5 @@ modifica di Marco
 vediamo cosa succede
 ## modifica branch
 modifica branch feature-ferra
+## esempio di comando push modifica mariano
+git push origin main 
