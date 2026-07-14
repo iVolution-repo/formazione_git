@@ -3,3 +3,9 @@ Ciao! sono diego
 Esempio di merge 1
 
 Esempio di merge 2 
+
+Esempio di rebase 
+
+Test 
+
+In progress 1 
