@@ -6,5 +6,5 @@ playground per formazione
 git push origin main 
 
 
-##modifica buoso
+## modifica buoso
 prova modifica buoso txt
