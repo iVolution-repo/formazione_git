@@ -4,7 +4,7 @@
 
       dcl-s mytext char(25);
 
-      /copy './mycopy.rpgle'
+      /copy '../qcpysrc/mycopy.rpgle'
    
       dsply 'Vuoi continuare? (S/N)' '' mytext;
 
