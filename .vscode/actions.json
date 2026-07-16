@@ -1,5 +1,9 @@
 [
   {
+    "name": "lista compila",
+    "command": "db§sif compila"
+  },
+  {
     "name": "Create RPGLE Program",
     "command": "CRTBNDRPG PGM(&CURLIB/&NAME) SRCSTMF('&RELATIVEPATH') OPTION(*EVENTF) DBGVIEW(*SOURCE) TGTCCSID(*JOB)",
     "deployFirst": true,
