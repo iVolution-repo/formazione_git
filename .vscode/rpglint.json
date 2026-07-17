@@ -1,0 +1,12 @@
+{
+    "SpecificCasing": [
+        {
+            "operation": "*BIF",
+            "expected": "*upper"
+        },
+        {
+            "operation": "*DECLARE",
+            "expected": "*lower"
+        }
+    ]
+}   
