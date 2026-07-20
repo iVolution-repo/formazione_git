@@ -4,11 +4,17 @@
  * Raccolta di esempi pratici sulle Promise in JavaScript/Node.js
  * con le relative best practices commentate.
  *
- * Eseguibile con: node promises-esempi.js
+ * Eseguibile con: node 8-promise.js
  * Richiede Node >= 18 (per fetch nativo e Promise.any/allSettled).
  * ------------------------------------------------------------------
  */
 
+// Attiva la modalità strict: evita errori silenziosi (es. variabili
+// globali create per errore), vieta costrutti ambigui e rende il
+// comportamento del motore JS più prevedibile durante gli esempi.
+// Nota: nei moduli ES (import/export) la strict mode è già implicita,
+// ma la direttiva viene mantenuta esplicita per uniformità con gli
+// altri file della raccolta.
 'use strict';
 
 import { promisify } from 'node:util';
