@@ -6,7 +6,8 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitThis": true
+    "noImplicitThis": true,
+    "useUnknownInCatchVariables": false 
   },
   "include": ["**/*.js", "globals.d.ts"],
   "exclude": ["node_modules"]
