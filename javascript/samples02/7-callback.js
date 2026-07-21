@@ -8,7 +8,7 @@
  * Eseguibile con: node 7-callback.js
  * ------------------------------------------------------------------
  */
-
+// @ts-nocheck
 // Attiva la modalità strict: evita errori silenziosi (es. variabili
 // globali create per errore), vieta costrutti ambigui e rende il
 // comportamento del motore JS più prevedibile durante gli esempi.
