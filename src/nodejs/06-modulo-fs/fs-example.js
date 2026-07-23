@@ -16,3 +16,10 @@ fs.writeFile('message.txt', 'Hello Node.js', (err) => {
   if (err) throw err;
   console.log('The file has been saved!');
 });
+
+try {
+  const data2 = fs.readFileSync('./message.txt', { encoding: 'utf8', flag: 'r' });
+  console.log('input2.txt content:', data2);
+} catch (err) {
+  console.error('Error reading input2.txt:', err);
+}
