@@ -40,7 +40,8 @@ const willIGetNewPhone = new Promise(
       };
       resolve(phone); // fulfilled
     } else {
-      const reason = new Error('mom is not happy'); reject(reason); // reject
+      const reason = new Error('mom is not happy'); 
+      reject(reason); // reject
     }
   }
 );

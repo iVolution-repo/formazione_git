@@ -19,5 +19,22 @@ class Person {
     return this.name;
   }
 }
+
+class Meccanico extends Person {
+  constructor(name, surname) {
+    super(name);
+    this.surname = surname;
+  }
+  getName() {
+    return this.name + " " + this.surname;
+  }
+  cambiaRuota() {
+    return "Ruota cambiata!";
+  }
+} 
+
 const me = new Person("Tricia");
+const diego = new Meccanico("Diego","Rossi");
+
 console.log(me.getName());
+console.log(diego.getName());

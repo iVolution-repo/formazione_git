@@ -22,8 +22,17 @@ const willIGetNewPhone = new Promise(
 const askMom = () => {
   willIGetNewPhone
     .then((fulfilled) => {
-      // yay, you got a new phone
-      console.log(fulfilled); // output: { brand: 'Samsung', color: 'black' }
+        // yay, you got a new phone
+        console.log(fulfilled); // output: { brand: 'Samsung', color: 'black' }
+        willIGetNewPhone
+        .then((fulfilled) => {
+          // yay, you got a new phone
+          console.log(fulfilled); // output: { brand: 'Samsung', color: 'black' }
+        })
+        .catch((error) => {
+          // oops, mom don't buy it
+          console.log(error.message); // output: 'mom is not happy'
+        });
     })
     .catch((error) => {
       // oops, mom don't buy it

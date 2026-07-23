@@ -12,8 +12,8 @@
 const myobj = {}; //Empty object
 let key; //Used for the property key
 for (let i = 0; i < 10; i++) {
-  key = `key${i}`;
-  myobj[key] = `value ${i}`;
+  key = `key${i} `;
+  myobj[key] = "value" + i ;
 }
 
 /*
@@ -24,6 +24,9 @@ for (let i = 0; i < 10; i++) {
 const keys = Object.keys(myobj);
 console.log(keys);
 //Array ["key0", "key1", "key2", "key3", "key4", "key5", "key6", "key7", "key8", "key9"]
+
+const values = Object.values(myobj);
+console.log(values);
 
 /*
    With a list of keys, we can dynamically loop through the

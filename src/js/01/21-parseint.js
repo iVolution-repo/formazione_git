@@ -6,7 +6,7 @@
    conbine parseInt with isNaN to check whether it returns NaN
    or not. As an alternative, you may also using parseFloat.
 */
-
+// @ts-nocheck
 const values = ["500", "", "hello", "25"];
 for (let i = 0; i < values.length; i++) {
   if (!isNaN(parseInt(values[i], 10)))
