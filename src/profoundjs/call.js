@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+"use strict";
+
+async function call() {
+  // Load Profound.js
+  const profoundjs = require("profoundjs");
+
+  // Apply configuration
+  await profoundjs.applyConfig();
+
+  // Process command line parameters
+  const login = (process.argv.includes("-login") || process.argv.includes("--login"));
+
+  const moduleName = process.argv[2];
+  if (moduleName == null) {
+    console.log("You must specify a module.");
+    process.exit(1);
+  }
+
+  const parms = [];
+  for (let i = 3; i < process.argv.length; i++) {
+    const arg = process.argv[i];
+    if (arg.startsWith("-")) continue;
+    parms.push(arg);
+  }
+
+  // Call module
+  profoundjs.commandLineCall(moduleName, parms, login);
+}
+call();
