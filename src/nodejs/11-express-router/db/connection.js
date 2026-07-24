@@ -4,60 +4,81 @@
 // Isolare la logica del database in un file separato è una buona pratica:
 // i router non devono sapere COME ci si connette, ma solo chiedere "esegui
 // questa query". Se domani cambiamo driver o parametri, tocchiamo solo qui.
+//
+// NOTA IMPORTANTE: "idb-connector" è un binding nativo che usa le API di
+// sistema di IBM i (DB2 for i toolkit). Funziona SOLO se il processo Node.js
+// gira direttamente sull'IBM i (dentro PASE), non da un client remoto come
+// Windows o Linux. Se il server Express deve girare su una macchina remota,
+// serve invece un driver ODBC/JDBC con licenza (es. "odbc" + IBM i Access
+// ODBC Driver, oppure "ibm_db" con licenza DB2 Connect valida).
 // ===========================================================================
 
-// 1) Importiamo il driver nativo IBM per Db2. Il pacchetto "ibm_db" include
-//    il CLI driver (clidriver) ed è multipiattaforma: gira anche su Windows
-//    e sa dialogare con DB2 for i via DRDA.
-const ibmdb = require('ibm_db');
+// 1) Importiamo idb-connector: espone le classi dbconn (connessione) e
+//    dbstmt (statement) con API a callback.
+const { dbconn, dbstmt, IN, CHAR } = require('idb-connector');
 
-// 2) Costruiamo la stringa di connessione a partire dalle variabili d'ambiente.
-//    PROTOCOL=TCPIP è obbligatorio per una connessione di rete.
-//    I valori arrivano dal file .env caricato in index.js.
-const connectionString =
-  `DATABASE=${process.env.DB2_DATABASE};` +
-  `HOSTNAME=${process.env.DB2_HOST};` +
-  `PORT=${process.env.DB2_PORT};` +
-  `PROTOCOL=TCPIP;` +
-  `UID=${process.env.DB2_UID};` +
-  `PWD=${process.env.DB2_PWD};`;
-
-// 3) Creiamo un POOL di connessioni. Aprire una connessione a ogni richiesta
-//    HTTP è lento e costoso: il pool tiene pronte alcune connessioni e le
-//    riusa. È il pattern corretto per un server web.
-const pool = new ibmdb.Pool();
-pool.setMaxPoolSize(10); // numero massimo di connessioni contemporanee
+// 2) Apriamo la connessione. "*LOCAL" indica il database locale dell'IBM i
+//    su cui gira il processo Node.js: non serve host/porta/utente/password
+//    perché il job eredita il profilo utente del sistema operativo.
+//    Se invece serve autenticarsi esplicitamente si può usare:
+//    connection.conn(process.env.DB2_DATABASE || '*LOCAL', process.env.DB2_UID, process.env.DB2_PWD);
+const connection = new dbconn();
+connection.conn(process.env.DB2_DATABASE || '*LOCAL');
 
 /**
  * Esegue una query sul database e restituisce le righe come array di oggetti.
  *
- * @param {string} sql    - La query SQL. Usa "?" per i parametri (prepared statement).
- * @param {Array}  params - Valori da sostituire ai "?" nella query (opzionale).
+ * @param {string} sql    - La query SQL.
+ * @param {Array}  params - Valori per i parametri "?" (opzionale, prepared statement).
  * @returns {Promise<Array>} le righe risultanti.
- *
- * Nota: usare i "?" al posto di concatenare le stringhe protegge da SQL
- * injection e lascia al driver la gestione corretta di tipi ed escaping.
  */
 function query(sql, params = []) {
-  // Avvolgiamo l'API a callback del driver in una Promise, così nei router
-  // possiamo usare la sintassi moderna async/await.
+  // Avvolgiamo l'API a callback di idb-connector in una Promise, così nei
+  // router possiamo usare async/await.
   return new Promise((resolve, reject) => {
-    // 4) Chiediamo una connessione al pool.
-    pool.open(connectionString, (openErr, conn) => {
-      if (openErr) {
-        return reject(openErr);
-      }
+    const statement = new dbstmt(connection);
 
-      // 5) Eseguiamo la query passando anche i parametri.
-      conn.query(sql, params, (queryErr, rows) => {
-        // 6) IMPORTANTISSIMO: restituiamo la connessione al pool con close().
-        //    Con il pool, close() non chiude davvero il socket: lo rimette a
-        //    disposizione per la prossima richiesta.
-        conn.close(() => {
-          if (queryErr) {
-            return reject(queryErr);
+    if (params.length === 0) {
+      // 3a) Query senza parametri: exec esegue direttamente l'SQL.
+      statement.exec(sql, (result, error) => {
+        statement.close();
+        if (error) {
+          return reject(error);
+        }
+        resolve(result);
+      });
+      return;
+    }
+
+    // 3b) Query con parametri: prepare -> bind -> execute (prepared statement).
+    statement.prepare(sql, (error) => {
+      if (error) {
+        statement.close();
+        return reject(error);
+      }
+      // bindParam vuole ogni parametro come tripla [valore, io, indicator]:
+      // IN = parametro di input, CHAR = tipo dato carattere.
+      const bindingParams = params.map((value) => [value, IN, CHAR]);
+      statement.bindParam(bindingParams, (bindError) => {
+        if (bindError) {
+          statement.close();
+          return reject(bindError);
+        }
+        statement.execute((execResult, execError) => {
+          if (execError) {
+            statement.close();
+            return reject(execError);
           }
-          resolve(rows);
+
+          // Con prepare/bindParam/execute su una SELECT le righe non arrivano
+          // dentro "execResult": vanno recuperate esplicitamente con fetchAll.
+          statement.fetchAll((rows, fetchError) => {
+            statement.close();
+            if (fetchError) {
+              return reject(fetchError);
+            }
+            resolve(rows);
+          });
         });
       });
     });
@@ -65,12 +86,13 @@ function query(sql, params = []) {
 }
 
 /**
- * Chiude tutte le connessioni del pool.
+ * Chiude la connessione verso il database.
  * Da chiamare allo spegnimento dell'applicazione per liberare le risorse.
  */
 function closePool() {
   return new Promise((resolve) => {
-    pool.close(() => resolve(true));
+    connection.close();
+    resolve(true);
   });
 }
 
